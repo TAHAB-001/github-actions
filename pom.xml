@@ -66,7 +66,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
-		<finalName>demo-spring-boot-devOps</finalName>
+		<finalName>git-action-demo-devops</finalName>
 	</build>
 
 </project>
