@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user123
+    ports:
+      - "3307:3306"  # HostPort:ContainerPort
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - spring-net
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spring-boot-app
+    ports:
+      - "9898:9898"
+    depends_on:
+      - mysql
+    networks:
+      - spring-net
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/mydb
+      DB_USERNAME: user
+      DB_PASSWORD: user123
+
+volumes:
+  mysql-data:
+
+networks:
+  spring-net:
