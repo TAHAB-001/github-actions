@@ -5,7 +5,7 @@ FROM openjdk:21-jdk-slim
 WORKDIR /app
 
 # Copy the jar file into the container
-COPY target/git-action-demo-devops.jar app.jar
+COPY target/git-action-demo-devop.jar app.jar
 
 # Expose the port the app runs on
 EXPOSE 9898
