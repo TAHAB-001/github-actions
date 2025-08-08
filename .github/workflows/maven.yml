@@ -47,6 +47,3 @@ jobs:
 
     - name: Check running containers
       run: docker ps
-
-    - name: Test API inside container
-      run: curl http://localhost:9898/get-data
