@@ -43,7 +43,7 @@ jobs:
     - name: Run Docker container
       run: |
           docker pull tahabohra001/git-action-demo-devops:latest
-          docker run -d -p 9898:9898 tahabohra001/git-action-demo-devops:latest
+          docker run -d -p 9898:9898 --name app tahabohra001/git-action-demo-devops:latest
 
     - name: Check running containers
       run: docker ps
