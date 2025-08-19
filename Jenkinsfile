@@ -41,7 +41,7 @@ pipeline {
                 sh '''
                     docker stop $APP_NAME || true
                     docker rm $APP_NAME || true
-                    docker run -d --name $APP_NAME -p 80:9898 $DOCKER_HUB_REPO
+                    docker run -d --name $APP_NAME -p 9898:9898 $DOCKER_HUB_REPO
                 '''
             }
         }
