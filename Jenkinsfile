@@ -1,14 +1,48 @@
 pipeline {
     agent any
+
+    environment {
+        APP_NAME = "springboot-demo"
+        DOCKER_IMAGE = "springboot-demo:latest"
+        DOCKER_HUB_REPO = "tahabohra001/springboot-demo"
+    }
+
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
-                git branch: 'master', credentialsId: 'github-creds', url: 'https://github.com/TAHAB-001/github-actions.git'
+                git branch: 'main', credentialsId: 'github-creds', url: 'https://github.com/TAHAB-001/github-actions.git'
             }
         }
-        stage('Build') {
+
+        stage('Build with Maven') {
             steps {
                 sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $DOCKER_IMAGE .'
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    sh 'docker tag $DOCKER_IMAGE $DOCKER_HUB_REPO'
+                    sh 'docker push $DOCKER_HUB_REPO'
+                }
+            }
+        }
+
+        stage('Deploy Container') {
+            steps {
+                sh '''
+                    docker stop $APP_NAME || true
+                    docker rm $APP_NAME || true
+                    docker run -d --name $APP_NAME -p 80:9898 $DOCKER_HUB_REPO
+                '''
             }
         }
     }
