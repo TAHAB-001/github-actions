@@ -38,11 +38,12 @@ pipeline {
 
         stage('Deploy with Docker Compose') {
             steps {
-                sh '''
-                    docker-compose down || true
-                    docker-compose pull
-                    docker-compose up -d
-                '''
+                dir("${WORKSPACE}") {
+                   sh '''
+                       docker-compose down || true
+                       docker-compose pull
+                       docker-compose up -d
+                   '''
             }
         }
     }
