@@ -41,8 +41,8 @@ pipeline {
                 dir("${WORKSPACE}") {
                     sh '''
                         docker-compose down || true
-                        docker-compose pull
-                        docker-compose up -d --force-recreate
+                        docker-compose pull --ignore-pull-failures
+                        docker-compose up -d --force-recreate --remove-orphans
                     '''
                 }
             }
