@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        APP_NAME = "springboot-demo"
-        DOCKER_IMAGE = "springboot-demo:latest"
+        APP_NAME        = "springboot-demo"
+        DOCKER_IMAGE    = "springboot-demo:latest"
         DOCKER_HUB_REPO = "tahabohra001/springboot-demo"
     }
 
@@ -38,12 +38,16 @@ pipeline {
 
         stage('Deploy with Docker Compose') {
             steps {
-                dir("${WORKSPACE}") {
-                    sh '''
-                        docker-compose down || true
-                        docker-compose pull --ignore-pull-failures
-                        docker-compose up -d --force-recreate --remove-orphans
-                    '''
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    dir("${WORKSPACE}") {
+                        sh '''
+                            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                            docker rmi -f tahabohra001/springboot-demo:latest || true
+                            docker-compose down || true
+                            docker-compose pull --ignore-pull-failures
+                            docker-compose up -d --force-recreate --remove-orphans
+                        '''
+                    }
                 }
             }
         }
