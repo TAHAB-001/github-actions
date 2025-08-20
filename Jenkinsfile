@@ -38,16 +38,12 @@ pipeline {
 
         stage('Deploy with Docker Compose') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    dir("${WORKSPACE}") {
-                        sh '''
-                            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                            docker rmi -f tahabohra001/springboot-demo:latest || true
-                            docker-compose down || true
-                            docker-compose pull --ignore-pull-failures
-                            docker-compose up -d --force-recreate --remove-orphans
-                        '''
-                    }
+                dir("${WORKSPACE}") {
+                    sh '''
+                        docker-compose down || true
+                        docker-compose pull --ignore-pull-failures
+                        docker-compose up -d --force-recreate --remove-orphans
+                    '''
                 }
             }
         }
