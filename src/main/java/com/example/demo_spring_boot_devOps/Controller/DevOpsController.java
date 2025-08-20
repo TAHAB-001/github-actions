@@ -17,7 +17,7 @@ public class DevOpsController {
     private UserService userService;
     @GetMapping("get-data")
     public String getData(){
-        return "Hello DevOps BUDDY?";
+        return "Hello DevOps at INDORE?";
     }
 
     @PostMapping("save-user")
