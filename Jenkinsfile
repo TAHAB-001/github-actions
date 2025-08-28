@@ -44,7 +44,7 @@ pipeline {
                 withKubeConfig([credentialsId: 'kubeconfig-cred']) {
                     sh '''
                         # Apply Kubernetes manifests
-                        kubectl apply -f k8s/springboot-mysql.yaml
+                        kubectl apply -f springboot-mysql.yaml
 
                         # Update deployment image to latest
                         kubectl set image deployment/$APP_NAME $APP_NAME=$DOCKER_HUB_REPO:latest -n default --record
