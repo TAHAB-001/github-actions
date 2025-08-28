@@ -41,18 +41,18 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                kubernetesDeploy(
-                    configs: "k8s/springboot-mysql.yaml",
-                    kubeconfigId: "kubeconfig-cred"
-                )
+                withKubeConfig([credentialsId: 'kubeconfig-cred']) {
+                    sh '''
+                        # Apply Kubernetes manifests
+                        kubectl apply -f k8s/springboot-mysql.yaml
 
-                sh '''
-                    # Update deployment image to latest
-                    kubectl set image deployment/$APP_NAME $APP_NAME=$DOCKER_HUB_REPO:latest -n default --record
+                        # Update deployment image to latest
+                        kubectl set image deployment/$APP_NAME $APP_NAME=$DOCKER_HUB_REPO:latest -n default --record
 
-                    # Wait for rollout
-                    kubectl rollout status deployment/$APP_NAME -n default
-                '''
+                        # Wait for rollout
+                        kubectl rollout status deployment/$APP_NAME -n default
+                    '''
+                }
             }
         }
     }
