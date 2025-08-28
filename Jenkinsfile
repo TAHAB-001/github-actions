@@ -26,7 +26,7 @@ pipeline {
                     docker-compose build
 
                     # Tag the app service image for Docker Hub
-                    docker tag springboot-demo:latest $DOCKER_HUB_REPO:latest
+                    docker tag docker-ci-pipeline_app:latest $DOCKER_HUB_REPO:latest
                 '''
             }
         }
