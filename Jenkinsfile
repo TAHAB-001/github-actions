@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         APP_NAME        = "springboot-demo"
-        DOCKER_IMAGE    = "springboot-demo:latest"
         DOCKER_HUB_REPO = "tahabohra001/springboot-demo"
     }
 
@@ -20,9 +19,15 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build Docker Image with Docker Compose') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE .'
+                sh '''
+                    # Build images using docker-compose
+                    docker-compose build
+
+                    # Tag the app service image for Docker Hub
+                    docker tag ${APP_NAME}_app:latest $DOCKER_HUB_REPO:latest
+                '''
             }
         }
 
@@ -31,7 +36,6 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
                     sh '''
                         echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                        docker tag $DOCKER_IMAGE $DOCKER_HUB_REPO:latest
                         docker push $DOCKER_HUB_REPO:latest
                     '''
                 }
@@ -40,7 +44,6 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                // Apply the whole YAML manifest first (creates deployments, PVC, services)
                 withKubeConfig([credentialsId: 'kubeconfig-cred', serverUrl: 'https://<YOUR_CLUSTER_ENDPOINT>']) {
                     sh '''
                         kubectl apply -f k8s/springboot-mysql.yaml -n default
