@@ -1,0 +1,111 @@
+# =========================
+# Spring Boot Deployment
+# =========================
+apiVersion: apps/v1
+kind: Deployment  # Kubernetes kind resource we are creating
+metadata:
+  name: springboot-demo
+  labels:
+    app: springboot-demo
+spec:
+  replicas: 3    # No. of replicas that will be created for this deployment
+  selector:
+    matchLabels:
+      app: springboot-demo
+  template:
+    metadata:
+      labels:
+        app: springboot-demo
+    spec:
+      containers:
+        - name: springboot-demo
+          image: tahabohra001/springboot-demo:latest    # image that will be used to containers in the cluster
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9898   # the port that the container running in cluster
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://mysql-service:3306/springdb
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: root
+---
+apiVersion: v1     # kubernetes API version
+kind: Service       # kubernetes resource kind we are cresting
+metadata:           # Metadata of resource we are creating
+  name: springboot-service
+spec:
+  selector:
+    app: springboot-demo
+  ports:
+    - protocol: TCP
+      port: 80       # the port that the service is running
+      targetPort: 9898   # the port exposed by the service
+  type: LoadBalancer    # type of the service
+---
+# =========================
+# MySQL Persistent Volume Claim
+# =========================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# =========================
+# MySQL Deployment
+# =========================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: root
+            - name: MYSQL_DATABASE
+              value: springdb
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-storage
+          persistentVolumeClaim:
+            claimName: mysql-pvc
+---
+# =========================
+# MySQL Service
+# =========================
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+spec:
+  selector:
+    app: mysql
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306

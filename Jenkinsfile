@@ -29,20 +29,23 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                    sh 'docker tag $DOCKER_IMAGE $DOCKER_HUB_REPO'
-                    sh 'docker push $DOCKER_HUB_REPO'
+                    sh '''
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker tag $DOCKER_IMAGE $DOCKER_HUB_REPO:latest
+                        docker push $DOCKER_HUB_REPO:latest
+                    '''
                 }
             }
         }
 
-        stage('Deploy with Docker Compose') {
+        stage('Deploy to Kubernetes') {
             steps {
-                dir("${WORKSPACE}") {
+                // Apply the whole YAML manifest first (creates deployments, PVC, services)
+                withKubeConfig([credentialsId: 'kubeconfig-cred', serverUrl: 'https://<YOUR_CLUSTER_ENDPOINT>']) {
                     sh '''
-                        docker-compose down || true
-                        docker-compose pull --ignore-pull-failures
-                        docker-compose up -d --force-recreate --remove-orphans
+                        kubectl apply -f k8s/springboot-mysql.yaml -n default
+                        kubectl set image deployment/$APP_NAME $APP_NAME=$DOCKER_HUB_REPO:latest -n default --record
+                        kubectl rollout status deployment/$APP_NAME -n default
                     '''
                 }
             }
