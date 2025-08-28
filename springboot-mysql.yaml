@@ -41,7 +41,7 @@ spec:
     app: springboot-demo   # <-- must match your Deployment's pod label
   ports:
     - protocol: TCP
-      port: 80             # Service port
+      port: 9898            # Service port
       targetPort: 9898     # Container port
       nodePort: 30080      # Exposed port on EC2 (must be between 30000–32767)
 ---
