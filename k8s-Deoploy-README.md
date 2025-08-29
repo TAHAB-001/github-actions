@@ -77,7 +77,6 @@ sudo apt-get install -y jenkins
 sudo systemctl enable jenkins
 sudo systemctl start jenkins
 
-
 Install Jenkins Plugins:
 
 ✅ Pipeline
